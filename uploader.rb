@@ -41,14 +41,18 @@ folder_path = 'repository'
 # Create folder if it does not exist
 FileUtils.mkdir_p(folder_path) unless Dir.exist?(folder_path)
 
-# Iterate over files in the folder and upload them to the repository
-Dir.glob("#{folder_path}/**/*").each do |file_path|
-  next if File.directory?(file_path)
+# Iterate over files and directories in the folder and upload them to the repository
+def upload_files(client, repo, folder_path, base_path)
+  Dir.glob("#{folder_path}/**/*").each do |file_path|
+    next if File.directory?(file_path)
 
-  relative_path = Pathname.new(file_path).relative_path_from(Pathname.new(folder_path)).to_s
-  content = File.read(file_path)
-  client.create_contents(repo.full_name, relative_path, "Add #{File.basename(file_path)}", content)
+    relative_path = Pathname.new(file_path).relative_path_from(Pathname.new(base_path)).to_s
+    content = File.read(file_path)
+    client.create_contents(repo.full_name, relative_path, "Add #{File.basename(file_path)}", content)
+  end
 end
+
+upload_files(client, repo, folder_path, folder_path)
 
 puts "Repository #{repo_name} created and files uploaded."
 
